@@ -15,3 +15,5 @@ Native Android-App für die bisherige ODS-Logik.
 
 ## APK
 Die GitHub Action `Build Android APK` baut bei Änderungen auf `main` automatisch eine Debug-APK und speichert sie als Artefakt `PunkteTracker-APK`.
+
+Build wird über GitHub Actions erzeugt.
