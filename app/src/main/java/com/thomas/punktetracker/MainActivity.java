@@ -79,9 +79,7 @@ public class MainActivity extends Activity {
     private TextView quickSelectionText;
     private LinearLayout statusCard;
     private LinearLayout bookingsContainer;
-    private EditText exactInput;
     private Button quickEntryButton;
-    private Button exactEntryButton;
 
     private final Map<Integer, Button> quickButtons = new HashMap<>();
     private int pendingQuickAmount = 0;
@@ -142,7 +140,6 @@ public class MainActivity extends Activity {
         buildDateNavigation(root);
         buildStatusCard(root);
         buildQuickEntryCard(root);
-        buildExactEntryCard(root);
         buildBookingsSection(root);
         buildFooter(root);
 
@@ -302,49 +299,6 @@ public class MainActivity extends Activity {
         card.addView(quickEntryButton, entryLp);
     }
 
-    private void buildExactEntryCard(LinearLayout root) {
-        LinearLayout card = createCard(COLOR_SURFACE);
-        LinearLayout.LayoutParams cardLp = matchWrap();
-        cardLp.topMargin = dp(14);
-        root.addView(card, cardLp);
-
-        TextView title = text("Exakten Tageswert setzen", 20, Typeface.BOLD);
-        title.setTextColor(COLOR_TEXT);
-        card.addView(title, matchWrap());
-
-        TextView description = text(
-                "Gewünschten Gesamtwert eingeben. Die App trägt automatisch nur die notwendige Differenz als neue Buchung ein.",
-                13,
-                Typeface.NORMAL
-        );
-        description.setTextColor(COLOR_TEXT_MUTED);
-        description.setLineSpacing(0, 1.12f);
-        LinearLayout.LayoutParams descriptionLp = matchWrap();
-        descriptionLp.topMargin = dp(3);
-        descriptionLp.bottomMargin = dp(12);
-        card.addView(description, descriptionLp);
-
-        exactInput = new EditText(this);
-        exactInput.setTextSize(20);
-        exactInput.setTextColor(COLOR_TEXT);
-        exactInput.setHintTextColor(Color.rgb(150, 156, 166));
-        exactInput.setHint("z. B. 12");
-        exactInput.setSingleLine(true);
-        exactInput.setSelectAllOnFocus(true);
-        exactInput.setInputType(
-                InputType.TYPE_CLASS_NUMBER | InputType.TYPE_NUMBER_FLAG_SIGNED
-        );
-        exactInput.setPadding(dp(14), dp(11), dp(14), dp(11));
-        exactInput.setBackground(roundedBackground(COLOR_SURFACE, 12, 1, COLOR_BORDER));
-        card.addView(exactInput, matchWrapHeight(dp(54)));
-
-        exactEntryButton = createPrimaryButton("Eintragen");
-        exactEntryButton.setOnClickListener(v -> addExactBooking());
-        LinearLayout.LayoutParams entryLp = matchWrapHeight(dp(54));
-        entryLp.topMargin = dp(10);
-        card.addView(exactEntryButton, entryLp);
-    }
-
     private void buildBookingsSection(LinearLayout root) {
         LinearLayout header = new LinearLayout(this);
         header.setOrientation(LinearLayout.HORIZONTAL);
@@ -398,7 +352,6 @@ public class MainActivity extends Activity {
 
         selectedDate = candidate;
         pendingQuickAmount = 0;
-        exactInput.setText("");
         refreshAll();
         pageScroll.post(() -> pageScroll.smoothScrollTo(0, 0));
     }
@@ -469,9 +422,6 @@ public class MainActivity extends Activity {
         for (Button button : quickButtons.values()) {
             setButtonEnabled(button, enabled);
         }
-        exactInput.setEnabled(enabled);
-        exactInput.setAlpha(enabled ? 1f : 0.45f);
-        setButtonEnabled(exactEntryButton, enabled);
         setButtonEnabled(quickEntryButton, enabled && pendingQuickAmount != 0);
     }
 
@@ -561,41 +511,6 @@ public class MainActivity extends Activity {
         pendingQuickAmount = 0;
         refreshAll();
         Toast.makeText(this, "Buchung eingetragen.", Toast.LENGTH_SHORT).show();
-    }
-
-    private void addExactBooking() {
-        String raw = exactInput.getText().toString().trim();
-        if (raw.isEmpty() || raw.equals("-") || raw.equals("+")) {
-            Toast.makeText(this, "Bitte eine ganze Zahl eingeben.", Toast.LENGTH_SHORT).show();
-            return;
-        }
-
-        try {
-            long targetValue = Long.parseLong(raw);
-            long currentValue = getDayTotal(selectedDate);
-            long difference = targetValue - currentValue;
-
-            if (difference == 0L) {
-                Toast.makeText(
-                        this,
-                        "Der Tageswert ist bereits " + formatNumber(targetValue) + ".",
-                        Toast.LENGTH_SHORT
-                ).show();
-                exactInput.selectAll();
-                return;
-            }
-
-            addBooking(
-                    selectedDate,
-                    difference,
-                    "Tageswert auf " + formatNumber(targetValue) + " gesetzt"
-            );
-            exactInput.setText("");
-            refreshAll();
-            Toast.makeText(this, "Tageswert übernommen.", Toast.LENGTH_SHORT).show();
-        } catch (NumberFormatException exception) {
-            Toast.makeText(this, "Ungültige Zahl.", Toast.LENGTH_SHORT).show();
-        }
     }
 
     private void addBooking(LocalDate date, long amount, String label) {
