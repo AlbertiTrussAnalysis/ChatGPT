@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -15,6 +15,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+
+      - name: Apply cumulative quick booking update
+        run: python3 scripts/apply_quick_sum_update.py
+
+      - name: Persist updated app source
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add app/src/main/java/com/thomas/punktetracker/MainActivity.java app/build.gradle
+            git commit -m "Apply cumulative quick booking update [skip ci]"
+            git push
+          fi
 
       - name: Set up Java 17
         uses: actions/setup-java@v4
@@ -45,7 +58,7 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: PunkteTracker-v2-APK
+          name: PunkteTracker-v2.1-APK
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
           retention-days: 90
