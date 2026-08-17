@@ -262,7 +262,7 @@ public class MainActivity extends Activity {
         card.addView(title, matchWrap());
 
         TextView description = text(
-                "Betrag auswählen und anschließend auf „Eintragen“ tippen.",
+                "Mehrere Beträge nacheinander drücken. Die angezeigte Summe wird mit „Eintragen“ als eine Buchung übernommen.",
                 13,
                 Typeface.NORMAL
         );
@@ -286,7 +286,7 @@ public class MainActivity extends Activity {
         addQuickButton(minusRow, "-5", -5);
         addQuickButton(minusRow, "-10", -10);
 
-        quickSelectionText = text("Noch keinen Betrag ausgewählt", 14, Typeface.BOLD);
+        quickSelectionText = text("Aktuelle Summe: 0", 14, Typeface.BOLD);
         quickSelectionText.setTextColor(COLOR_TEXT_MUTED);
         quickSelectionText.setGravity(Gravity.CENTER);
         quickSelectionText.setPadding(dp(10), dp(10), dp(10), dp(10));
@@ -486,7 +486,7 @@ public class MainActivity extends Activity {
         button.setPadding(dp(4), 0, dp(4), 0);
         button.setStateListAnimator(null);
         button.setOnClickListener(v -> {
-            pendingQuickAmount = amount;
+            pendingQuickAmount += amount;
             refreshQuickSelection();
         });
 
@@ -502,14 +502,14 @@ public class MainActivity extends Activity {
         boolean editable = !selectedDate.isAfter(currentDate) && !selectedDate.isBefore(START_DATE);
 
         if (pendingQuickAmount == 0) {
-            quickSelectionText.setText("Noch keinen Betrag ausgewählt");
+            quickSelectionText.setText("Aktuelle Summe: 0");
             quickSelectionText.setTextColor(COLOR_TEXT_MUTED);
             quickSelectionText.setBackground(
                     roundedBackground(COLOR_NEUTRAL, 12, 0, Color.TRANSPARENT)
             );
         } else {
             quickSelectionText.setText(
-                    "Ausgewählt: " + formatSignedNumber(pendingQuickAmount)
+                    "Aktuelle Summe: " + formatSignedNumber(pendingQuickAmount)
             );
             boolean positive = pendingQuickAmount > 0;
             quickSelectionText.setTextColor(positive ? COLOR_GREEN : COLOR_RED);
@@ -526,7 +526,7 @@ public class MainActivity extends Activity {
         for (Map.Entry<Integer, Button> entry : quickButtons.entrySet()) {
             int amount = entry.getKey();
             Button button = entry.getValue();
-            boolean selected = amount == pendingQuickAmount;
+            boolean selected = false;
             boolean positive = amount > 0;
 
             int fill;
@@ -549,7 +549,7 @@ public class MainActivity extends Activity {
 
     private void addQuickBooking() {
         if (pendingQuickAmount == 0) {
-            Toast.makeText(this, "Bitte zuerst einen Betrag auswählen.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Die aktuelle Summe ist 0.", Toast.LENGTH_SHORT).show();
             return;
         }
 
